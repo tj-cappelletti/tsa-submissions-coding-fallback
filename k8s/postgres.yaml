@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: tsa-postgres
+  namespace: coding
 spec:
   serviceName: tsa-postgres
   replicas: 1
@@ -47,6 +48,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: tsa-postgres
+  namespace: coding
 spec:
   selector:
     app: tsa-postgres
