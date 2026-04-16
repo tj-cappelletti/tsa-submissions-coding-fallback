@@ -14,6 +14,13 @@
     </div>
 }
 
+@if(User.IsInRole(nameof(TsaSubmissions.Web.Models.AppRole.Participant)))
+{
+    <div class="alert alert-info">
+        <strong>Welcome, Participant!</strong> Once you click "Open Problem" and view it, your 2-hours to complete the competition starts.
+    </div>
+}
+
 <table class="table table-striped">
     <thead>
     <tr>

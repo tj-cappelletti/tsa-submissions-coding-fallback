@@ -1,0 +1,90 @@
+@{
+    ViewData["Title"] = "Scoring Information";
+}
+
+<div class="scoring-content">
+    @Html.Raw(ViewBag.ScoringHtml)
+</div>
+
+@section Styles {
+    <style>
+        .scoring-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .scoring-content table {
+            width: 100%;
+            margin: 1rem 0;
+            border-collapse: collapse;
+        }
+
+        .scoring-content table th,
+        .scoring-content table td {
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            text-align: left;
+        }
+
+        .scoring-content table thead th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .scoring-content table tbody tr:nth-of-type(odd) {
+            background-color: #f8f9fa;
+        }
+
+        .scoring-content table tbody tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .scoring-content h1 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .scoring-content h2 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .scoring-content h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .scoring-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .scoring-content code {
+            background-color: #f8f9fa;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .scoring-content pre {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .scoring-content pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+    </style>
+}

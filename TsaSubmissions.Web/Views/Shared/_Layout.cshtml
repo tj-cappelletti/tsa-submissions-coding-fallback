@@ -13,19 +13,29 @@
     <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
         <div class="container-fluid">
             <a class="navbar-brand" asp-controller="Problems" asp-action="Index">TSA Submissions</a>
-            <div class="d-flex ms-auto align-items-center gap-2">
-                @if (User.Identity?.IsAuthenticated == true)
-                {
-                    <span class="text-muted">@User.Identity.Name (@(User.IsInRole(nameof(TsaSubmissions.Web.Models.AppRole.Judge)) ? "Judge" : "Participant"))</span>
-                    <form method="post" asp-controller="Account" asp-action="Logout">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">Logout</button>
-                    </form>
-                }
-                else
-                {
-                    <a class="btn btn-sm btn-primary" asp-controller="Account" asp-action="Login">Login</a>
-                }
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Scoring">Scoring Information</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span class="text-muted">@User.Identity.Name (@(User.IsInRole(nameof(TsaSubmissions.Web.Models.AppRole.Judge)) ? "Judge" : "Participant"))</span>
+                        <form method="post" asp-controller="Account" asp-action="Logout">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Logout</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a class="btn btn-sm btn-primary" asp-controller="Account" asp-action="Login">Login</a>
+                    }
+                </div>
             </div>
         </div>
     </nav>
