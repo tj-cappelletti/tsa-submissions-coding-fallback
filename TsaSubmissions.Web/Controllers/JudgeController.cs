@@ -18,7 +18,7 @@ public class JudgeController(ApplicationDbContext dbContext, IOptions<EventSetti
 {
     private readonly PasswordHasher<AppUser> _passwordHasher = new();
     private readonly EventSettings _eventSettings = eventSettings.Value;
-    private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().DisableHtml().Build();
+    private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().DisableHtml().Build();
 
     public async Task<IActionResult> ViewProblem(int id, SupportedLanguage language = SupportedLanguage.CSharp)
     {

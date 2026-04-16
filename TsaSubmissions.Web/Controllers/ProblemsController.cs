@@ -15,7 +15,7 @@ namespace TsaSubmissions.Web.Controllers;
 public class ProblemsController(ApplicationDbContext dbContext, IOptions<EventSettings> eventSettings) : Controller
 {
     private const long MaxSubmissionBytes = 5 * 1024 * 1024;
-    private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().DisableHtml().Build();
+    private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().DisableHtml().Build();
     private readonly EventSettings _eventSettings = eventSettings.Value;
 
     public async Task<IActionResult> Index()
