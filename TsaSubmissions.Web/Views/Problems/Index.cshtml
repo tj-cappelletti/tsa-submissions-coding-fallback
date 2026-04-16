@@ -29,6 +29,7 @@
             <td>
                 @if (User.IsInRole(nameof(TsaSubmissions.Web.Models.AppRole.Judge)))
                 {
+                    <a class="btn btn-sm btn-outline-info" asp-controller="Judge" asp-action="ViewProblem" asp-route-id="@problem.Id">Preview Problem</a>
                     <a class="btn btn-sm btn-outline-primary" asp-controller="Judge" asp-action="ProblemSubmissions" asp-route-problemId="@problem.Id">View Submissions</a>
                     <a class="btn btn-sm btn-outline-secondary" asp-controller="Judge" asp-action="EditProblem" asp-route-id="@problem.Id">Edit</a>
                     <a class="btn btn-sm btn-outline-danger" asp-controller="Judge" asp-action="DeleteProblem" asp-route-id="@problem.Id">Delete</a>

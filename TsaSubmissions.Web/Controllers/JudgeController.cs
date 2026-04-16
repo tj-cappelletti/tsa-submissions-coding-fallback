@@ -1,3 +1,4 @@
+using Markdig;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,34 @@ public class JudgeController(ApplicationDbContext dbContext, IOptions<EventSetti
 {
     private readonly PasswordHasher<AppUser> _passwordHasher = new();
     private readonly EventSettings _eventSettings = eventSettings.Value;
+    private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().DisableHtml().Build();
+
+    public async Task<IActionResult> ViewProblem(int id, SupportedLanguage language = SupportedLanguage.CSharp)
+    {
+        var problem = await dbContext.Problems
+            .Include(p => p.StarterCodes)
+            .SingleOrDefaultAsync(p => p.Id == id);
+
+        if (problem is null)
+        {
+            return NotFound();
+        }
+
+        var starterCode = problem.StarterCodes.SingleOrDefault(s => s.Language == language)?.Code
+            ?? problem.StarterCodes.OrderBy(s => s.Language).FirstOrDefault()?.Code
+            ?? string.Empty;
+
+        var vm = new ProblemDetailsViewModel
+        {
+            Problem = problem,
+            DescriptionHtml = Markdown.ToHtml(problem.DescriptionMarkdown, _markdownPipeline),
+            SelectedLanguage = language,
+            StarterCode = starterCode
+        };
+
+        return View(vm);
+    }
+
     public async Task<IActionResult> ProblemSubmissions(int problemId)
     {
         var problem = await dbContext.Problems.SingleOrDefaultAsync(p => p.Id == problemId);

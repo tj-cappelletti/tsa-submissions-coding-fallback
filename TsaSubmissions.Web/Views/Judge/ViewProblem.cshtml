@@ -1,0 +1,34 @@
+@model TsaSubmissions.Web.ViewModels.ProblemDetailsViewModel
+@{
+    ViewData["Title"] = Model.Problem.Title + " (Preview)";
+}
+
+<div class="alert alert-info">
+    <strong>Judge Preview Mode:</strong> This is how participants will see this problem. You cannot submit solutions in this view.
+</div>
+
+<h1>@Model.Problem.Title</h1>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <h3>Description</h3>
+        <div class="border rounded p-3">@Html.Raw(Model.DescriptionHtml)</div>
+    </div>
+    <div class="col-lg-5">
+        <h3>Starter Code</h3>
+        <form method="get" asp-action="ViewProblem" class="mb-2">
+            <input type="hidden" name="id" value="@Model.Problem.Id" />
+            <select class="form-select" name="language" onchange="this.form.submit()">
+                @foreach (var language in Enum.GetValues<TsaSubmissions.Web.Models.SupportedLanguage>())
+                {
+                    <option selected="@(language == Model.SelectedLanguage)" value="@language">@language</option>
+                }
+            </select>
+        </form>
+        <pre class="border rounded p-3 bg-light"><code>@Model.StarterCode</code></pre>
+
+        <div class="mt-4">
+            <a class="btn btn-secondary" asp-controller="Problems" asp-action="Index">Back to Problems</a>
+        </div>
+    </div>
+</div>
