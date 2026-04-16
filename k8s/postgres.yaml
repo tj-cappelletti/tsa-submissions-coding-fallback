@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tsa-postgres
+spec:
+  serviceName: tsa-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tsa-postgres
+  template:
+    metadata:
+      labels:
+        app: tsa-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: tsa_submissions
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tsa-postgres
+spec:
+  selector:
+    app: tsa-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432

@@ -1,0 +1,36 @@
+@model TsaSubmissions.Web.ViewModels.JudgeProblemSubmissionsViewModel
+@{
+    ViewData["Title"] = $"Latest submissions - {Model.Problem.Title}";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Participant</th>
+        <th>Language</th>
+        <th>Uploaded (UTC)</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var submission in Model.LatestSubmissions)
+    {
+        <tr>
+            <td>@submission.Participant.Username</td>
+            <td>@submission.Language</td>
+            <td>@submission.UploadedAtUtc.ToString("u")</td>
+            <td>
+                <a class="btn btn-sm btn-outline-secondary" asp-action="Download" asp-route-submissionId="@submission.Id">Download</a>
+                <a class="btn btn-sm btn-outline-primary" asp-action="ViewSubmission" asp-route-submissionId="@submission.Id">View</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (!Model.LatestSubmissions.Any())
+{
+    <p>No submissions yet.</p>
+}

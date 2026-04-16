@@ -1,0 +1,48 @@
+@model TsaSubmissions.Web.ViewModels.ProblemDetailsViewModel
+@{
+    ViewData["Title"] = Model.Problem.Title;
+}
+
+<h1>@Model.Problem.Title</h1>
+<p><strong>Clock started:</strong> @Model.EventStartedAtUtc?.ToString("u") UTC</p>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <h3>Description</h3>
+        <div class="border rounded p-3">@Html.Raw(Model.DescriptionHtml)</div>
+    </div>
+    <div class="col-lg-4">
+        <h3>Starter Code</h3>
+        <form method="get" asp-action="Details" class="mb-2">
+            <input type="hidden" name="id" value="@Model.Problem.Id" />
+            <select class="form-select" name="language" onchange="this.form.submit()">
+                @foreach (var language in Enum.GetValues<TsaSubmissions.Web.Models.SupportedLanguage>())
+                {
+                    <option selected="@(language == Model.SelectedLanguage)" value="@language">@language</option>
+                }
+            </select>
+        </form>
+        <pre class="border rounded p-3 bg-light"><code>@Model.StarterCode</code></pre>
+    </div>
+    <div class="col-lg-3">
+        <h3>Submit</h3>
+        <form method="post" asp-action="UploadSubmission" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="problemId" value="@Model.Problem.Id" />
+            <input type="hidden" name="language" value="@Model.SelectedLanguage" />
+            <div class="mb-3">
+                <input class="form-control" type="file" name="submissionFile" required />
+            </div>
+            <button type="submit" class="btn btn-success">Upload Submission</button>
+        </form>
+    </div>
+</div>

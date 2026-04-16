@@ -1,0 +1,33 @@
+@model IReadOnlyCollection<TsaSubmissions.Web.Models.Problem>
+@{
+    ViewData["Title"] = "Problems";
+}
+
+<h1>Problems</h1>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var problem in Model)
+    {
+        <tr>
+            <td>@problem.Title</td>
+            <td>
+                @if (User.IsInRole(nameof(TsaSubmissions.Web.Models.AppRole.Judge)))
+                {
+                    <a class="btn btn-outline-primary" asp-controller="Judge" asp-action="ProblemSubmissions" asp-route-problemId="@problem.Id">View Latest Submissions</a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-primary" asp-action="Details" asp-route-id="@problem.Id">Open Problem</a>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
