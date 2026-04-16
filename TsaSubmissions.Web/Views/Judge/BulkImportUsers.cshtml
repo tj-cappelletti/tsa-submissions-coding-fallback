@@ -1,0 +1,41 @@
+@model TsaSubmissions.Web.ViewModels.BulkImportUsersViewModel
+@{
+    ViewData["Title"] = "Bulk Import Users";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Upload CSV File</h5>
+                <p class="card-text">
+                    Upload a CSV file containing user credentials. The file must include <code>username</code> and <code>password</code> columns.
+                </p>
+
+                <div class="alert alert-info" role="alert">
+                    <strong>CSV Format Example:</strong>
+                    <pre class="mb-0 mt-2">username,password
+participant1,pass123
+participant2,pass456</pre>
+                </div>
+
+                <form asp-action="BulkImportUsers" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label asp-for="CsvFile" class="form-label">CSV File</label>
+                        <input asp-for="CsvFile" class="form-control" type="file" accept=".csv" />
+                        <span asp-validation-for="CsvFile" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Upload and Import</button>
+                    <a asp-action="UserList" class="btn btn-secondary">View User List</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

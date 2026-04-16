@@ -1,0 +1,78 @@
+@model List<TsaSubmissions.Web.ViewModels.UserListViewModel>
+@{
+    ViewData["Title"] = "User List";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="mb-3">
+    <a asp-action="BulkImportUsers" class="btn btn-primary">Bulk Import Users</a>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Start Time (EST)</th>
+            <th>End Time (EST)</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Username</td>
+                <td>
+                    @if (user.StartedAtEst.HasValue)
+                    {
+                        @user.StartedAtEst.Value.ToString("g")
+                    }
+                    else
+                    {
+                        <span class="text-muted">Not started</span>
+                    }
+                </td>
+                <td>
+                    @if (user.EndTimeEst.HasValue)
+                    {
+                        @user.EndTimeEst.Value.ToString("g")
+                    }
+                    else
+                    {
+                        <span class="text-muted">N/A</span>
+                    }
+                </td>
+                <td>
+                    @if (user.StartedAtUtc.HasValue)
+                    {
+                        var now = DateTime.UtcNow;
+                        if (now < user.StartedAtUtc.Value)
+                        {
+                            <span class="badge bg-secondary">Not Started</span>
+                        }
+                        else if (user.EndTimeUtc.HasValue && now > user.EndTimeUtc.Value)
+                        {
+                            <span class="badge bg-danger">Ended</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Not Started</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info" role="alert">
+        No participant users found. Use the Bulk Import feature to add users.
+    </div>
+}
