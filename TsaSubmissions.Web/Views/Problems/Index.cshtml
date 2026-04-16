@@ -25,6 +25,7 @@
                 else
                 {
                     <a class="btn btn-outline-primary" asp-action="Details" asp-route-id="@problem.Id">Open Problem</a>
+                    <a class="btn btn-outline-secondary ms-2" asp-action="MySubmissions" asp-route-problemId="@problem.Id">View My Submissions</a>
                 }
             </td>
         </tr>

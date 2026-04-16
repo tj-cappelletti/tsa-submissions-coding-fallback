@@ -1,0 +1,46 @@
+@model TsaSubmissions.Web.ViewModels.SubmissionCodeViewModel
+@{
+    ViewData["Title"] = $"View Submission - {Model.Submission.Problem.Title}";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" />
+}
+
+<h1>@Model.Submission.Problem.Title</h1>
+
+<div class="mb-3">
+    <a class="btn btn-outline-secondary" asp-action="MySubmissions" asp-route-problemId="@Model.Submission.ProblemId">
+        <i class="bi bi-arrow-left"></i> Back to My Submissions
+    </a>
+    <a class="btn btn-outline-primary" asp-action="DownloadSubmission" asp-route-submissionId="@Model.Submission.Id">
+        <i class="bi bi-download"></i> Download
+    </a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p class="mb-1">
+            <strong>File Name:</strong> @Model.Submission.FileName
+        </p>
+        <p class="mb-1">
+            <strong>Language:</strong> @Model.Submission.Language
+        </p>
+        <p class="mb-0">
+            <strong>Uploaded:</strong> @Model.Submission.UploadedAtUtc.ToString("u")
+        </p>
+    </div>
+</div>
+
+<h3>Code Preview</h3>
+<pre><code class="@Model.PrismLanguageClass">@Model.DisplayCode</code></pre>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+}

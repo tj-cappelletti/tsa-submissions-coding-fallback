@@ -1,0 +1,55 @@
+@model TsaSubmissions.Web.ViewModels.JudgeProblemSubmissionsViewModel
+@{
+    ViewData["Title"] = $"My Submissions - {Model.Problem.Title}";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="mb-3">
+    <a class="btn btn-outline-secondary" asp-action="Index">
+        <i class="bi bi-arrow-left"></i> Back to Problems
+    </a>
+    <a class="btn btn-outline-primary" asp-action="Details" asp-route-id="@Model.Problem.Id">
+        <i class="bi bi-file-earmark-code"></i> Open Problem
+    </a>
+</div>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Submission #</th>
+        <th>Language</th>
+        <th>File Name</th>
+        <th>Uploaded (UTC)</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @{ var submissionNumber = Model.LatestSubmissions.Count; }
+    @foreach (var submission in Model.LatestSubmissions)
+    {
+        <tr>
+            <td>@submissionNumber</td>
+            <td>@submission.Language</td>
+            <td>@submission.FileName</td>
+            <td>@submission.UploadedAtUtc.ToString("u")</td>
+            <td>
+                <a class="btn btn-sm btn-outline-secondary" asp-action="DownloadSubmission" asp-route-submissionId="@submission.Id">
+                    <i class="bi bi-download"></i> Download
+                </a>
+                <a class="btn btn-sm btn-outline-primary" asp-action="ViewSubmission" asp-route-submissionId="@submission.Id">
+                    <i class="bi bi-eye"></i> View
+                </a>
+            </td>
+        </tr>
+        submissionNumber--;
+    }
+    </tbody>
+</table>
+
+@if (!Model.LatestSubmissions.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> You haven't submitted any solutions for this problem yet.
+    </div>
+}
