@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using TsaSubmissions.Web.Configuration;
 using TsaSubmissions.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+builder.Services.Configure<EventSettings>(builder.Configuration.GetSection(nameof(EventSettings)));
+
 if (builder.Configuration.GetValue<bool>("UseInMemoryDatabase"))
 {
     builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase("tsa-submissions"));

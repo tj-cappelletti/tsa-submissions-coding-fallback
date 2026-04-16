@@ -3,6 +3,8 @@ using Markdig;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using TsaSubmissions.Web.Configuration;
 using TsaSubmissions.Web.Data;
 using TsaSubmissions.Web.Models;
 using TsaSubmissions.Web.ViewModels;
@@ -10,10 +12,11 @@ using TsaSubmissions.Web.ViewModels;
 namespace TsaSubmissions.Web.Controllers;
 
 [Authorize]
-public class ProblemsController(ApplicationDbContext dbContext) : Controller
+public class ProblemsController(ApplicationDbContext dbContext, IOptions<EventSettings> eventSettings) : Controller
 {
     private const long MaxSubmissionBytes = 5 * 1024 * 1024;
     private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().DisableHtml().Build();
+    private readonly EventSettings _eventSettings = eventSettings.Value;
 
     public async Task<IActionResult> Index()
     {
@@ -51,13 +54,20 @@ public class ProblemsController(ApplicationDbContext dbContext) : Controller
             ?? problem.StarterCodes.OrderBy(s => s.Language).FirstOrDefault()?.Code
             ?? string.Empty;
 
+        var participantDeadline = session.StartedAtUtc.AddHours(_eventSettings.ParticipantDurationHours);
+        var eventDeadline = _eventSettings.EventEndTimeUtc;
+        var submissionDeadline = participantDeadline < eventDeadline ? participantDeadline : eventDeadline;
+
         var vm = new ProblemDetailsViewModel
         {
             Problem = problem,
             DescriptionHtml = Markdown.ToHtml(problem.DescriptionMarkdown, _markdownPipeline),
             SelectedLanguage = language,
             StarterCode = starterCode,
-            EventStartedAtUtc = session.StartedAtUtc
+            EventStartedAtUtc = session.StartedAtUtc,
+            SubmissionDeadlineUtc = submissionDeadline,
+            ParticipantDeadlineUtc = participantDeadline,
+            EventDeadlineUtc = eventDeadline
         };
 
         return View(vm);
@@ -72,6 +82,22 @@ public class ProblemsController(ApplicationDbContext dbContext) : Controller
         if (!problem)
         {
             return NotFound();
+        }
+
+        // Check if submission deadline has passed
+        var participantId = GetCurrentUserId();
+        var session = await dbContext.ParticipantSessions.SingleOrDefaultAsync(s => s.ParticipantId == participantId);
+        if (session is not null)
+        {
+            var participantDeadline = session.StartedAtUtc.AddHours(_eventSettings.ParticipantDurationHours);
+            var eventDeadline = _eventSettings.EventEndTimeUtc;
+            var submissionDeadline = participantDeadline < eventDeadline ? participantDeadline : eventDeadline;
+
+            if (DateTime.UtcNow > submissionDeadline)
+            {
+                TempData["Error"] = "Submission deadline has passed. You can no longer submit solutions.";
+                return RedirectToAction(nameof(Details), new { id = problemId, language });
+            }
         }
 
         if (submissionFile.Length == 0)

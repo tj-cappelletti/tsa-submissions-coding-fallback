@@ -9,4 +9,7 @@ public class ProblemDetailsViewModel
     public SupportedLanguage SelectedLanguage { get; set; }
     public string StarterCode { get; set; } = string.Empty;
     public DateTime? EventStartedAtUtc { get; set; }
+    public DateTime? SubmissionDeadlineUtc { get; set; }
+    public DateTime? ParticipantDeadlineUtc { get; set; }
+    public DateTime? EventDeadlineUtc { get; set; }
 }

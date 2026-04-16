@@ -1,10 +1,87 @@
 @model TsaSubmissions.Web.ViewModels.ProblemDetailsViewModel
 @{
     ViewData["Title"] = Model.Problem.Title;
+    var now = DateTime.UtcNow;
+    var deadlinePassed = Model.SubmissionDeadlineUtc.HasValue && now > Model.SubmissionDeadlineUtc.Value;
+
+    // Eastern Time Zone (handles EST/EDT automatically)
+    var easternZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+
+    // Helper function to ensure DateTime is UTC before conversion
+    DateTime EnsureUtc(DateTime dt)
+    {
+        return dt.Kind == DateTimeKind.Utc ? dt : DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+    }
+
+    // Determine which deadline applies
+    bool isParticipantDeadline = false;
+    bool isEventDeadline = false;
+    string deadlineMessage = "";
+
+    if (Model.ParticipantDeadlineUtc.HasValue && Model.EventDeadlineUtc.HasValue)
+    {
+        if (Model.ParticipantDeadlineUtc.Value < Model.EventDeadlineUtc.Value)
+        {
+            isParticipantDeadline = true;
+            deadlineMessage = "Your 2-hour submission window";
+        }
+        else
+        {
+            isEventDeadline = true;
+            deadlineMessage = "Event closing time";
+        }
+    }
 }
 
 <h1>@Model.Problem.Title</h1>
-<p><strong>Clock started:</strong> @Model.EventStartedAtUtc?.ToString("u") UTC</p>
+<p>
+    @if (Model.EventStartedAtUtc.HasValue)
+    {
+        var startedUtc = EnsureUtc(Model.EventStartedAtUtc.Value);
+        var startedEst = TimeZoneInfo.ConvertTimeFromUtc(startedUtc, easternZone);
+        var startedTimeZoneAbbr = easternZone.IsDaylightSavingTime(startedEst) ? "EDT" : "EST";
+        <strong>Clock started:</strong> @startedEst.ToString("g") @startedTimeZoneAbbr
+    }
+    else
+    {
+        <text><strong>Clock started:</strong> N/A</text>
+    }
+    @if (Model.SubmissionDeadlineUtc.HasValue)
+    {
+        var deadlineUtc = EnsureUtc(Model.SubmissionDeadlineUtc.Value);
+        var deadlineEst = TimeZoneInfo.ConvertTimeFromUtc(deadlineUtc, easternZone);
+        var deadlineTimeZoneAbbr = easternZone.IsDaylightSavingTime(deadlineEst) ? "EDT" : "EST";
+        <br />
+        <strong>@deadlineMessage:</strong> 
+        <span class="@(deadlinePassed ? "text-danger fw-bold" : "text-success fw-bold")">
+            @deadlineEst.ToString("g") @deadlineTimeZoneAbbr
+            @if (deadlinePassed)
+            {
+                <span class="badge bg-danger ms-2">CLOSED</span>
+            }
+            else
+            {
+                <span class="badge bg-success ms-2">OPEN</span>
+            }
+        </span>
+        @if (isParticipantDeadline && Model.EventDeadlineUtc.HasValue)
+        {
+            var eventDeadlineUtc = EnsureUtc(Model.EventDeadlineUtc.Value);
+            var eventDeadlineEst = TimeZoneInfo.ConvertTimeFromUtc(eventDeadlineUtc, easternZone);
+            var eventTimeZoneAbbr = easternZone.IsDaylightSavingTime(eventDeadlineEst) ? "EDT" : "EST";
+            <br />
+            <small class="text-muted">Event closes at: @eventDeadlineEst.ToString("g") @eventTimeZoneAbbr</small>
+        }
+        else if (isEventDeadline && Model.ParticipantDeadlineUtc.HasValue)
+        {
+            var participantDeadlineUtc = EnsureUtc(Model.ParticipantDeadlineUtc.Value);
+            var participantDeadlineEst = TimeZoneInfo.ConvertTimeFromUtc(participantDeadlineUtc, easternZone);
+            var participantTimeZoneAbbr = easternZone.IsDaylightSavingTime(participantDeadlineEst) ? "EDT" : "EST";
+            <br />
+            <small class="text-muted">Your personal 2-hour window would have ended at: @participantDeadlineEst.ToString("g") @participantTimeZoneAbbr</small>
+        }
+    }
+</p>
 
 @if (TempData["Success"] is string success)
 {
@@ -34,14 +111,23 @@
         <pre class="border rounded p-3 bg-light"><code>@Model.StarterCode</code></pre>
 
         <h3 class="mt-4">Submit</h3>
-        <form method="post" asp-action="UploadSubmission" enctype="multipart/form-data">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="problemId" value="@Model.Problem.Id" />
-            <input type="hidden" name="language" value="@Model.SelectedLanguage" />
-            <div class="mb-3">
-                <input class="form-control" type="file" name="submissionFile" required />
+        @if (deadlinePassed)
+        {
+            <div class="alert alert-warning">
+                <strong>Submission Closed:</strong> The deadline for this problem has passed. No further submissions are accepted.
             </div>
-            <button type="submit" class="btn btn-success">Upload Submission</button>
-        </form>
+        }
+        else
+        {
+            <form method="post" asp-action="UploadSubmission" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="problemId" value="@Model.Problem.Id" />
+                <input type="hidden" name="language" value="@Model.SelectedLanguage" />
+                <div class="mb-3">
+                    <input class="form-control" type="file" name="submissionFile" required />
+                </div>
+                <button type="submit" class="btn btn-success">Upload Submission</button>
+            </form>
+        }
     </div>
 </div>
