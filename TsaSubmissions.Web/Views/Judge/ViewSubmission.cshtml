@@ -1,0 +1,25 @@
+@model TsaSubmissions.Web.ViewModels.SubmissionCodeViewModel
+@{
+    ViewData["Title"] = $"Submission - {Model.Submission.Participant.Username}";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" />
+}
+
+<h1>@Model.Submission.Problem.Title</h1>
+<p>
+    <strong>Participant:</strong> @Model.Submission.Participant.Username<br />
+    <strong>Language:</strong> @Model.Submission.Language<br />
+    <strong>Uploaded:</strong> @Model.Submission.UploadedAtUtc.ToString("u")
+</p>
+
+<pre><code class="@Model.PrismLanguageClass">@Model.DisplayCode</code></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>

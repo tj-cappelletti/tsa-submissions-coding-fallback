@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tsa-submissions-web
+  namespace: coding
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tsa-submissions-web
+  template:
+    metadata:
+      labels:
+        app: tsa-submissions-web
+    spec:
+      containers:
+        - name: web
+          image: tsa-submissions-web:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:8080
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: tsa-db-secrets
+                  key: app-connection-string
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tsa-submissions-web
+  namespace: coding
+spec:
+  selector:
+    app: tsa-submissions-web
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tsa-submissions-web
+  namespace: coding
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: coding.tsa.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tsa-submissions-web
+                port:
+                  number: 80
