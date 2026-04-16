@@ -5,7 +5,7 @@ A fallback ASP.NET Core MVC app for viewing TSA coding problems and collecting s
 ## Run locally
 
 ```bash
-cd /home/runner/work/tsa-submissions-coding-fallback/tsa-submissions-coding-fallback/TsaSubmissions.Web
+cd TsaSubmissions.Web
 dotnet run
 ```
 
@@ -16,4 +16,5 @@ Default seeded accounts:
 
 ## Kubernetes (K3s)
 
-Deploy PostgreSQL and app manifests from `/home/runner/work/tsa-submissions-coding-fallback/tsa-submissions-coding-fallback/k8s`.
+Deploy PostgreSQL and app manifests from `./k8s`.
+Update `k8s/secrets.yaml` with environment-specific credentials before applying manifests.

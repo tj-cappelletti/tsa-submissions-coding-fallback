@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 using TsaSubmissions.Web.Data;
 using TsaSubmissions.Web.Models;
 using TsaSubmissions.Web.ViewModels;
@@ -64,10 +65,21 @@ public class JudgeController(ApplicationDbContext dbContext) : Controller
             return NotFound();
         }
 
+        string displayCode;
+        try
+        {
+            displayCode = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true)
+                .GetString(submission.FileContent);
+        }
+        catch (DecoderFallbackException)
+        {
+            displayCode = "// Unable to display this submission as UTF-8 text.";
+        }
+
         var vm = new SubmissionCodeViewModel
         {
             Submission = submission,
-            DisplayCode = System.Text.Encoding.UTF8.GetString(submission.FileContent),
+            DisplayCode = displayCode,
             PrismLanguageClass = submission.Language switch
             {
                 SupportedLanguage.Cpp => "language-cpp",

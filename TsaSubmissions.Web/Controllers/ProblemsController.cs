@@ -12,6 +12,7 @@ namespace TsaSubmissions.Web.Controllers;
 [Authorize]
 public class ProblemsController(ApplicationDbContext dbContext) : Controller
 {
+    private const long MaxSubmissionBytes = 5 * 1024 * 1024;
     private readonly MarkdownPipeline _markdownPipeline = new MarkdownPipelineBuilder().DisableHtml().Build();
 
     public async Task<IActionResult> Index()
@@ -79,6 +80,12 @@ public class ProblemsController(ApplicationDbContext dbContext) : Controller
             return RedirectToAction(nameof(Details), new { id = problemId, language });
         }
 
+        if (submissionFile.Length > MaxSubmissionBytes)
+        {
+            TempData["Error"] = "Submission exceeds the 5 MB limit.";
+            return RedirectToAction(nameof(Details), new { id = problemId, language });
+        }
+
         await using var memoryStream = new MemoryStream();
         await submissionFile.CopyToAsync(memoryStream);
 
@@ -103,6 +110,11 @@ public class ProblemsController(ApplicationDbContext dbContext) : Controller
     private int GetCurrentUserId()
     {
         var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return int.Parse(idClaim!);
+        if (string.IsNullOrWhiteSpace(idClaim) || !int.TryParse(idClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("Authenticated user id claim is missing.");
+        }
+
+        return userId;
     }
 }

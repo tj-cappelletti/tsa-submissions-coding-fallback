@@ -3,7 +3,9 @@
     ViewData["Title"] = $"Submission - {Model.Submission.Participant.Username}";
 }
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" />
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" />
+}
 
 <h1>@Model.Submission.Problem.Title</h1>
 <p>

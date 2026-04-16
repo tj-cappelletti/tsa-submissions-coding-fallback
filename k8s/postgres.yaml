@@ -22,9 +22,15 @@ spec:
             - name: POSTGRES_DB
               value: tsa_submissions
             - name: POSTGRES_USER
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: tsa-db-secrets
+                  key: postgres-user
             - name: POSTGRES_PASSWORD
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: tsa-db-secrets
+                  key: postgres-password
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data

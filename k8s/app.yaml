@@ -21,7 +21,10 @@ spec:
             - name: ASPNETCORE_URLS
               value: http://+:8080
             - name: ConnectionStrings__DefaultConnection
-              value: Host=tsa-postgres;Port=5432;Database=tsa_submissions;Username=postgres;Password=postgres
+              valueFrom:
+                secretKeyRef:
+                  name: tsa-db-secrets
+                  key: app-connection-string
 ---
 apiVersion: v1
 kind: Service
