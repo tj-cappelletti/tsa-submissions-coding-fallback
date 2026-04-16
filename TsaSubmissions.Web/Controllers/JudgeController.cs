@@ -236,4 +236,192 @@ public class JudgeController(ApplicationDbContext dbContext, IOptions<EventSetti
 
         return View(userViewModels);
     }
+
+    // CRUD Operations for Problems
+
+    [HttpGet]
+    public IActionResult CreateProblem()
+    {
+        return View(new CreateProblemViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateProblem(CreateProblemViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var problem = new Problem
+        {
+            Title = model.Title,
+            DescriptionMarkdown = model.DescriptionMarkdown
+        };
+
+        dbContext.Problems.Add(problem);
+        await dbContext.SaveChangesAsync();
+
+        // Add starter codes
+        await AddOrUpdateStarterCodes(problem.Id, model);
+
+        TempData["Success"] = $"Problem '{problem.Title}' created successfully.";
+        return RedirectToAction("Index", "Problems");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditProblem(int id)
+    {
+        var problem = await dbContext.Problems
+            .Include(p => p.StarterCodes)
+            .SingleOrDefaultAsync(p => p.Id == id);
+
+        if (problem is null)
+        {
+            return NotFound();
+        }
+
+        var vm = new EditProblemViewModel
+        {
+            Id = problem.Id,
+            Title = problem.Title,
+            DescriptionMarkdown = problem.DescriptionMarkdown,
+            CppStarterCode = problem.StarterCodes.FirstOrDefault(s => s.Language == SupportedLanguage.Cpp)?.Code,
+            CSharpStarterCode = problem.StarterCodes.FirstOrDefault(s => s.Language == SupportedLanguage.CSharp)?.Code,
+            JavaStarterCode = problem.StarterCodes.FirstOrDefault(s => s.Language == SupportedLanguage.Java)?.Code,
+            JavaScriptStarterCode = problem.StarterCodes.FirstOrDefault(s => s.Language == SupportedLanguage.JavaScript)?.Code,
+            PythonStarterCode = problem.StarterCodes.FirstOrDefault(s => s.Language == SupportedLanguage.Python)?.Code
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditProblem(EditProblemViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var problem = await dbContext.Problems
+            .Include(p => p.StarterCodes)
+            .SingleOrDefaultAsync(p => p.Id == model.Id);
+
+        if (problem is null)
+        {
+            return NotFound();
+        }
+
+        problem.Title = model.Title;
+        problem.DescriptionMarkdown = model.DescriptionMarkdown;
+
+        await dbContext.SaveChangesAsync();
+
+        // Update starter codes
+        await AddOrUpdateStarterCodes(problem.Id, model);
+
+        TempData["Success"] = $"Problem '{problem.Title}' updated successfully.";
+        return RedirectToAction("Index", "Problems");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DeleteProblem(int id)
+    {
+        var problem = await dbContext.Problems
+            .Include(p => p.Submissions)
+            .SingleOrDefaultAsync(p => p.Id == id);
+
+        if (problem is null)
+        {
+            return NotFound();
+        }
+
+        return View(problem);
+    }
+
+    [HttpPost, ActionName("DeleteProblem")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteProblemConfirmed(int id)
+    {
+        var problem = await dbContext.Problems
+            .Include(p => p.StarterCodes)
+            .Include(p => p.Submissions)
+            .SingleOrDefaultAsync(p => p.Id == id);
+
+        if (problem is null)
+        {
+            return NotFound();
+        }
+
+        // Remove starter codes
+        dbContext.ProblemStarterCodes.RemoveRange(problem.StarterCodes);
+
+        // Remove submissions
+        dbContext.Submissions.RemoveRange(problem.Submissions);
+
+        // Remove problem
+        dbContext.Problems.Remove(problem);
+
+        await dbContext.SaveChangesAsync();
+
+        TempData["Success"] = $"Problem '{problem.Title}' deleted successfully.";
+        return RedirectToAction("Index", "Problems");
+    }
+
+    private async Task AddOrUpdateStarterCodes(int problemId, CreateProblemViewModel model)
+    {
+        await AddOrUpdateStarterCode(problemId, SupportedLanguage.Cpp, model.CppStarterCode);
+        await AddOrUpdateStarterCode(problemId, SupportedLanguage.CSharp, model.CSharpStarterCode);
+        await AddOrUpdateStarterCode(problemId, SupportedLanguage.Java, model.JavaStarterCode);
+        await AddOrUpdateStarterCode(problemId, SupportedLanguage.JavaScript, model.JavaScriptStarterCode);
+        await AddOrUpdateStarterCode(problemId, SupportedLanguage.Python, model.PythonStarterCode);
+    }
+
+    private async Task AddOrUpdateStarterCodes(int problemId, EditProblemViewModel model)
+    {
+        await AddOrUpdateStarterCode(problemId, SupportedLanguage.Cpp, model.CppStarterCode);
+        await AddOrUpdateStarterCode(problemId, SupportedLanguage.CSharp, model.CSharpStarterCode);
+        await AddOrUpdateStarterCode(problemId, SupportedLanguage.Java, model.JavaStarterCode);
+        await AddOrUpdateStarterCode(problemId, SupportedLanguage.JavaScript, model.JavaScriptStarterCode);
+        await AddOrUpdateStarterCode(problemId, SupportedLanguage.Python, model.PythonStarterCode);
+    }
+
+    private async Task AddOrUpdateStarterCode(int problemId, SupportedLanguage language, string? code)
+    {
+        var existingStarterCode = await dbContext.ProblemStarterCodes
+            .FirstOrDefaultAsync(s => s.ProblemId == problemId && s.Language == language);
+
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            // Remove if exists and code is empty
+            if (existingStarterCode != null)
+            {
+                dbContext.ProblemStarterCodes.Remove(existingStarterCode);
+                await dbContext.SaveChangesAsync();
+            }
+        }
+        else
+        {
+            if (existingStarterCode != null)
+            {
+                // Update existing
+                existingStarterCode.Code = code;
+            }
+            else
+            {
+                // Add new
+                var newStarterCode = new ProblemStarterCode
+                {
+                    ProblemId = problemId,
+                    Language = language,
+                    Code = code
+                };
+                dbContext.ProblemStarterCodes.Add(newStarterCode);
+            }
+            await dbContext.SaveChangesAsync();
+        }
+    }
 }

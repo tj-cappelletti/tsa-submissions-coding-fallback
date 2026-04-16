@@ -1,0 +1,77 @@
+@model TsaSubmissions.Web.ViewModels.CreateProblemViewModel
+@{
+    ViewData["Title"] = "Create Problem";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-10">
+        <form asp-action="CreateProblem" method="post">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Problem Details</h5>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DescriptionMarkdown" class="form-label"></label>
+                        <textarea asp-for="DescriptionMarkdown" class="form-control" rows="10"></textarea>
+                        <span asp-validation-for="DescriptionMarkdown" class="text-danger"></span>
+                        <small class="form-text text-muted">Use Markdown formatting for the problem description.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">Starter Code (Optional)</h5>
+                    <p class="text-muted">Provide starter code for each language you want to support. Leave blank if not applicable.</p>
+
+                    <div class="mb-3">
+                        <label asp-for="CppStarterCode" class="form-label"></label>
+                        <textarea asp-for="CppStarterCode" class="form-control font-monospace" rows="6"></textarea>
+                        <span asp-validation-for="CppStarterCode" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CSharpStarterCode" class="form-label"></label>
+                        <textarea asp-for="CSharpStarterCode" class="form-control font-monospace" rows="6"></textarea>
+                        <span asp-validation-for="CSharpStarterCode" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="JavaStarterCode" class="form-label"></label>
+                        <textarea asp-for="JavaStarterCode" class="form-control font-monospace" rows="6"></textarea>
+                        <span asp-validation-for="JavaStarterCode" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="JavaScriptStarterCode" class="form-label"></label>
+                        <textarea asp-for="JavaScriptStarterCode" class="form-control font-monospace" rows="6"></textarea>
+                        <span asp-validation-for="JavaScriptStarterCode" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PythonStarterCode" class="form-label"></label>
+                        <textarea asp-for="PythonStarterCode" class="form-control font-monospace" rows="6"></textarea>
+                        <span asp-validation-for="PythonStarterCode" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Create Problem</button>
+                <a asp-controller="Problems" asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

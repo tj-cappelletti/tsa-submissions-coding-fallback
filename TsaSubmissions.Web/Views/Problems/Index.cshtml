@@ -8,6 +8,7 @@
 @if (User.IsInRole(nameof(TsaSubmissions.Web.Models.AppRole.Judge)))
 {
     <div class="mb-3">
+        <a class="btn btn-success" asp-controller="Judge" asp-action="CreateProblem">Create New Problem</a>
         <a class="btn btn-primary" asp-controller="Judge" asp-action="UserList">User List</a>
         <a class="btn btn-secondary" asp-controller="Judge" asp-action="BulkImportUsers">Bulk Import Users</a>
     </div>
@@ -28,7 +29,9 @@
             <td>
                 @if (User.IsInRole(nameof(TsaSubmissions.Web.Models.AppRole.Judge)))
                 {
-                    <a class="btn btn-outline-primary" asp-controller="Judge" asp-action="ProblemSubmissions" asp-route-problemId="@problem.Id">View Latest Submissions</a>
+                    <a class="btn btn-sm btn-outline-primary" asp-controller="Judge" asp-action="ProblemSubmissions" asp-route-problemId="@problem.Id">View Submissions</a>
+                    <a class="btn btn-sm btn-outline-secondary" asp-controller="Judge" asp-action="EditProblem" asp-route-id="@problem.Id">Edit</a>
+                    <a class="btn btn-sm btn-outline-danger" asp-controller="Judge" asp-action="DeleteProblem" asp-route-id="@problem.Id">Delete</a>
                 }
                 else
                 {
