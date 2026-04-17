@@ -3,88 +3,293 @@
 }
 
 <div class="scoring-content">
-    @Html.Raw(ViewBag.ScoringHtml)
-</div>
+    <h1 id="scoring-of-submissionms">Scoring of Submissionms</h1>
+    <p>The scoring of a participant&#39;s submission is achieved via a weighted composite scoring.
+        We use three aspects or components to evaluate the submission.
+        These values are used to calculate a final score based on their weighted values.</p>
+        <pre><code>Score = (<span class="hljs-name">Correctness</span> × <span class="hljs-number">0.60</span>) + (<span class="hljs-name">Efficiency</span> × <span class="hljs-number">0.20</span>) + (<span class="hljs-name">Quality</span> × <span class="hljs-number">0.20</span>)
+        </code></pre>
+        <table>
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Weight</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Correctness</td>
+                    <td>60%</td>
+                    <td>Number of test cases that have passed</td>
+                </tr>
+                <tr>
+                    <td>Efficiency Ratio</td>
+                    <td>20%</td>
+                    <td>The performance of the solution relative to a known good baseline</td>
+                </tr>
+                <tr>
+                    <td>Code Quality Ratio</td>
+                    <td>20%</td>
+                    <td>The quality of the solution using standard metrics relative to a known baseline</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>Both the Efficiency Ratio and Code Quality Ratio are ratios calculated by comparing the participant&#39;s value
+            to a known baseline solution&#39;s value.
+            For each supported language, an optimized solution is created and measured just as a participant&#39;s entry
+            would be.
+            The test cases for a given problem are executed against the optimized solution 100 times.
+            The overall run duration and individual test case run durations results are captured and averaged out.
+            This is to ensure caching, CPU, and/or memory issues do not effect the baseline value.
+            The metrics used in code quality are also captured and set at the known baseline for the problem and langauge
+            combination.</p>
+            
+            <h2 id="correctness">Correctness</h2>
+            <p>The correctness score is intentionally weighted as the heaviest as the solution must work (even partially) to be
+                considered for the competition.
+                Regardless of chosen programming language, all submissions are evaluated against the same test cases.
+                The score is based on the number of test cases that have passed.</p>
+                <pre><code>Correctness = (<span class="hljs-keyword">Total</span> Passed Test <span class="hljs-keyword">Cases</span> / <span class="hljs-keyword">Total</span> Test <span class="hljs-keyword">Cases</span>) x <span class="hljs-number">100</span>
+                </code></pre>
+                <p>For example:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Submission</th>
+                            <th>Total Passed Test Cases</th>
+                            <th>Total Test Cases</th>
+                            <th>Correrctness</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Team 9001-901 (Java)</td>
+                            <td>30</td>
+                            <td>30</td>
+                            <td>100</td>
+                        </tr>
+                        <tr>
+                            <td>Team 9001-901 (Python)</td>
+                            <td>28</td>
+                            <td>30</td>
+                            <td>93.333</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h2 id="efficiency-ratio">Efficiency Ratio</h2>
+                <p>The Efficiency Ratio is designed to reward problem solving skills and penalize brute force approaches to the
+                    problem.
+                    Each programming language has its own performance, strengths, and weaknesses that must be considered when
+                    building a solution.
+                    In order to make the Efficiency Ratio score language agnostic as much as possible, and to ensure fairness when
+                    comparing across submissions, we use a known baseline for the chosen language to compare the efficiency of the
+                    solution against to create the ratio.</p>
+                    <pre><code>Efficiency <span class="hljs-built_in">Score</span> = (Baseline <span class="hljs-built_in">Time</span> / Participant <span class="hljs-built_in">Time</span>) × <span class="hljs-number">100</span>
+                    </code></pre>
+                    <p>For example:</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Submission</th>
+                                <th>Baseline Time</th>
+                                <th>Participant Time</th>
+                                <th>Efficiency Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Team 9001-901 (Java)</td>
+                                <td>120ms</td>
+                                <td>190ms</td>
+                                <td>63.157</td>
+                            </tr>
+                            <tr>
+                                <td>Team 9001-901 (Python)</td>
+                                <td>200ms</td>
+                                <td>220ms</td>
+                                <td>90.909</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>In this situation, the Python code is more efficient (as compared to the baseline).
+                        It&#39;s important to note that if a participant&#39;s solution is faster then the baseline, the score will
+                        reflect that reward the participant for their efforts.</p>
+                        <h2 id="code-quality-ratio">Code Quality Ratio</h2>
+                        <p>The Code Quality Ratio is designed to reward solutions that are written in such a way that future engineers would
+                            have no issues understaning the code and be able to easily maintain it.
+                            When it comes to code quality, there is a level subjectivity at play which is why the weighted value for this
+                            score is low.
+                            Just as with the Efficiency Score, we use a baseline value from the same solution used to calculate the baseline
+                            Efficiency Score.
+                            To calculate the Code Quality Ratio score, we use two industry established metrics to gauage quality; Cyclomatic
+                            Complexity and Lines of Code.</p>
+                            <pre><code>Cyclomatic Complexity Score = (<span class="hljs-name">Baseline</span> Cyclomatic Complexity / Participant Cyclomatic Complexity) x <span class="hljs-number">100</span>
 
-@section Styles {
-    <style>
-        .scoring-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+                                Lines Of Code Score = (<span class="hljs-name">Baseline</span> Lines of Code / Participant Lines of Code) x <span class="hljs-number">100</span>
 
-        .scoring-content table {
-            width: 100%;
-            margin: 1rem 0;
-            border-collapse: collapse;
-        }
+                                Code Quality Ratio Score = (<span class="hljs-name">Cyclomatic</span> Complexity Score x <span class="hljs-number">0.75</span>) + (<span class="hljs-name">Lines</span> Of Code Score x <span class="hljs-number">0.25</span>)
+                            </code></pre>
+                            <p>Cyclomatic Complexity is a software metric used to measure the structural complexity of a program by counting the
+                                number of linearly independent paths through its source code.
+                                The lower the number, the lower the percieved complexity.
+                                While this is not a perfect way to measure complexity, using a baseline value to help gauge if participant&#39;s
+                                solution is more or less complex then a known good solution allows us to compare complexity across submissions.
+                            </p>
+                            <p>The Lines of Code metric is often the subject of scrutiny and not always an ideal metric.
+                                We use this value in comparison to the known good solution with the purpose of gauging the particpant&#39;s
+                                command of the language they have chosen.
+                                Each programming language has tips and tricks to achieve certain outcomes easily.
+                                While again, not perfect, this does help to guage the participant&#39;s command as many of these tricks result
+                                is less code being written.</p>
+                                <p>For example:</p>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Submission</th>
+                                            <th>Baseline Cyclomatic Complexity</th>
+                                            <th>Participant Cyclomatic Complexity</th>
+                                            <th>Cyclomatic Complexity Score</th>
+                                            <th>Baseline Lines of Code</th>
+                                            <th>Participant Lines of Code</th>
+                                            <th>Lines Of Code Score</th>
+                                            <th>Code Quality Ratio Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Team 9001-901 (Java)</td>
+                                            <td>10</td>
+                                            <td>12</td>
+                                            <td>83.333</td>
+                                            <td>20</td>
+                                            <td>38</td>
+                                            <td>52.631</td>
+                                            <td>75.656</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Team 9001-901 (Python)</td>
+                                            <td>15</td>
+                                            <td>29</td>
+                                            <td>51.724</td>
+                                            <td>40</td>
+                                            <td>46</td>
+                                            <td>86.956</td>
+                                            <td>61.282</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h2 id="final-score">Final Score</h2>
+                                <p>Using the examples listed above, here is how the final scores would calculate out:</p>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Submission</th>
+                                            <th>Correctness</th>
+                                            <th>Efficiency</th>
+                                            <th>Quality</th>
+                                            <th>Final Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Team 9001-901 (Java)</td>
+                                            <td>100</td>
+                                            <td>63.157</td>
+                                            <td>75.656</td>
+                                            <td>87.763</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Team 9001-901 (Python)</td>
+                                            <td>93.333</td>
+                                            <td>90.909</td>
+                                            <td>61.282</td>
+                                            <td>86.438</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
 
-        .scoring-content table th,
-        .scoring-content table td {
-            padding: 0.75rem;
-            border: 1px solid #dee2e6;
-            text-align: left;
-        }
+                            </div>
 
-        .scoring-content table thead th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            border-bottom: 2px solid #dee2e6;
-        }
+                            @section Styles {
+                                <style>
+                                    .scoring-content {
+                                        max-width: 1200px;
+                                        margin: 0 auto;
+                                    }
 
-        .scoring-content table tbody tr:nth-of-type(odd) {
-            background-color: #f8f9fa;
-        }
+                                    .scoring-content table {
+                                        width: 100%;
+                                        margin: 1rem 0;
+                                        border-collapse: collapse;
+                                    }
 
-        .scoring-content table tbody tr:hover {
-            background-color: #e9ecef;
-        }
+                                    .scoring-content table th,
+                                    .scoring-content table td {
+                                        padding: 0.75rem;
+                                        border: 1px solid #dee2e6;
+                                        text-align: left;
+                                    }
 
-        .scoring-content h1 {
-            margin-top: 1.5rem;
-            margin-bottom: 1rem;
-            font-size: 2rem;
-            font-weight: 600;
-        }
+                                    .scoring-content table thead th {
+                                        background-color: #f8f9fa;
+                                        font-weight: 600;
+                                        border-bottom: 2px solid #dee2e6;
+                                    }
 
-        .scoring-content h2 {
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
+                                    .scoring-content table tbody tr:nth-of-type(odd) {
+                                        background-color: #f8f9fa;
+                                    }
 
-        .scoring-content h3 {
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
+                                    .scoring-content table tbody tr:hover {
+                                        background-color: #e9ecef;
+                                    }
 
-        .scoring-content p {
-            margin-bottom: 1rem;
-            line-height: 1.6;
-        }
+                                    .scoring-content h1 {
+                                        margin-top: 1.5rem;
+                                        margin-bottom: 1rem;
+                                        font-size: 2rem;
+                                        font-weight: 600;
+                                    }
 
-        .scoring-content code {
-            background-color: #f8f9fa;
-            padding: 0.2rem 0.4rem;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-        }
+                                    .scoring-content h2 {
+                                        margin-top: 2rem;
+                                        margin-bottom: 1rem;
+                                        font-size: 1.5rem;
+                                        font-weight: 600;
+                                    }
 
-        .scoring-content pre {
-            background-color: #f8f9fa;
-            padding: 1rem;
-            border-radius: 5px;
-            overflow-x: auto;
-            margin: 1rem 0;
-        }
+                                    .scoring-content h3 {
+                                        margin-top: 1.5rem;
+                                        margin-bottom: 0.75rem;
+                                        font-size: 1.25rem;
+                                        font-weight: 600;
+                                    }
 
-        .scoring-content pre code {
-            background-color: transparent;
-            padding: 0;
-        }
-    </style>
-}
+                                    .scoring-content p {
+                                        margin-bottom: 1rem;
+                                        line-height: 1.6;
+                                    }
+
+                                    .scoring-content code {
+                                        background-color: #f8f9fa;
+                                        padding: 0.2rem 0.4rem;
+                                        border-radius: 3px;
+                                        font-family: 'Courier New', monospace;
+                                        font-size: 0.9em;
+                                    }
+
+                                    .scoring-content pre {
+                                        background-color: #f8f9fa;
+                                        padding: 1rem;
+                                        border-radius: 5px;
+                                        overflow-x: auto;
+                                        margin: 1rem 0;
+                                    }
+
+                                    .scoring-content pre code {
+                                        background-color: transparent;
+                                        padding: 0;
+                                    }
+                                </style>
+                            }

@@ -25,17 +25,6 @@ public class HomeController : Controller
 
     public IActionResult Scoring()
     {
-        var scoringFilePath = Path.Combine(_environment.ContentRootPath, "scoring.md");
-
-        if (!System.IO.File.Exists(scoringFilePath))
-        {
-            return NotFound("Scoring documentation not found.");
-        }
-
-        var markdownContent = System.IO.File.ReadAllText(scoringFilePath);
-        var htmlContent = Markdown.ToHtml(markdownContent, _markdownPipeline);
-
-        ViewBag.ScoringHtml = htmlContent;
         return View();
     }
 }
