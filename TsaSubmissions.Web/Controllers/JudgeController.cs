@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Globalization;
+using System.IO.Compression;
 using System.Text;
+using System.Text.Json;
 using TsaSubmissions.Web.Configuration;
 using TsaSubmissions.Web.Data;
 using TsaSubmissions.Web.Models;
@@ -86,6 +88,127 @@ public class JudgeController(ApplicationDbContext dbContext, IOptions<EventSetti
         }
 
         return File(submission.FileContent, submission.ContentType, submission.FileName);
+    }
+
+    public async Task<IActionResult> DownloadAllSubmissions()
+    {
+        // Get all latest submissions grouped by participant and problem
+        var allSubmissions = await dbContext.Submissions
+            .Include(s => s.Participant)
+            .Include(s => s.Problem)
+            .ToListAsync();
+
+        // Group by participant and problem to get latest submission for each combination
+        var latestSubmissions = allSubmissions
+            .GroupBy(s => new { s.ParticipantId, s.ProblemId })
+            .Select(g => g.OrderByDescending(s => s.UploadedAtUtc).ThenByDescending(s => s.Id).First())
+            .OrderBy(s => s.Participant.Username)
+            .ThenBy(s => s.Problem.Title)
+            .ToList();
+
+        if (!latestSubmissions.Any())
+        {
+            TempData["Error"] = "No submissions found to download.";
+            return RedirectToAction("Index", "Problems");
+        }
+
+        // Create manifest data structure
+        var manifest = new
+        {
+            generatedAtUtc = DateTime.UtcNow,
+            totalUsers = latestSubmissions.Select(s => s.ParticipantId).Distinct().Count(),
+            totalSubmissions = latestSubmissions.Count,
+            users = latestSubmissions
+                .GroupBy(s => s.Participant)
+                .Select(g => new
+                {
+                    username = g.Key.Username,
+                    userId = g.Key.Id,
+                    submissions = g.Select(s => new
+                    {
+                        problemTitle = s.Problem.Title,
+                        problemId = s.Problem.Id,
+                        language = s.Language.ToString(),
+                        uploadedAtUtc = s.UploadedAtUtc,
+                        fileName = $"{SanitizeFileName(g.Key.Username)}/{SanitizeFileName(s.Problem.Title)}/submission.{GetFileExtension(s.Language)}"
+                    }).ToList()
+                }).ToList()
+        };
+
+        // Serialize manifest to JSON
+        var jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        var manifestJson = JsonSerializer.Serialize(manifest, jsonOptions);
+
+        // Create zip file in memory
+        using var memoryStream = new MemoryStream();
+        using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+        {
+            // Add manifest.json at root
+            var manifestEntry = archive.CreateEntry("manifest.json", CompressionLevel.Optimal);
+            using (var manifestStream = manifestEntry.Open())
+            using (var writer = new StreamWriter(manifestStream, Encoding.UTF8))
+            {
+                await writer.WriteAsync(manifestJson);
+            }
+
+            // Add all submissions
+            foreach (var submission in latestSubmissions)
+            {
+                // Get file extension based on language
+                var extension = GetFileExtension(submission.Language);
+
+                // Sanitize folder and file names to avoid invalid characters
+                var userName = SanitizeFileName(submission.Participant.Username);
+                var problemTitle = SanitizeFileName(submission.Problem.Title);
+                var fileName = $"submission.{extension}";
+
+                // Create entry path: [User Name]/[Problem Title]/submission.[extension]
+                var entryPath = $"{userName}/{problemTitle}/{fileName}";
+
+                // Create zip entry and write content
+                var zipEntry = archive.CreateEntry(entryPath, CompressionLevel.Optimal);
+                using var entryStream = zipEntry.Open();
+                await entryStream.WriteAsync(submission.FileContent);
+            }
+        }
+
+        // Reset stream position for reading
+        memoryStream.Position = 0;
+
+        // Generate filename with timestamp
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
+        var zipFileName = $"all_submissions_{timestamp}.zip";
+
+        return File(memoryStream.ToArray(), "application/zip", zipFileName);
+    }
+
+    private static string GetFileExtension(SupportedLanguage language)
+    {
+        return language switch
+        {
+            SupportedLanguage.Cpp => "cpp",
+            SupportedLanguage.CSharp => "cs",
+            SupportedLanguage.Java => "java",
+            SupportedLanguage.JavaScript => "js",
+            SupportedLanguage.Python => "py",
+            _ => "txt"
+        };
+    }
+
+    private static string SanitizeFileName(string fileName)
+    {
+        // Remove invalid path characters
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var sanitized = string.Join("_", fileName.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
+
+        // Replace multiple spaces with single space and trim
+        sanitized = string.Join(" ", sanitized.Split(' ', StringSplitOptions.RemoveEmptyEntries)).Trim();
+
+        return string.IsNullOrWhiteSpace(sanitized) ? "unknown" : sanitized;
     }
 
     public async Task<IActionResult> ViewSubmission(int submissionId)
